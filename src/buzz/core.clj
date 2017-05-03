@@ -10,9 +10,9 @@
   "Default exception handler for update-fn."
   [msg ex]
   (let [err-msg (str
-                  "Error occured while handling message.\n"
-                  "  Event: " (with-out-str (pp/pprint msg) "\n")
-                  "  Error: " (with-out-str (.printStackTrace ex (PrintWriter. *out*))))]
+                 "Error occured while handling message.\n"
+                 "  Event: " (with-out-str (pp/pprint msg) "\n")
+                 "  Error: " (with-out-str (.printStackTrace ex (PrintWriter. *out*))))]
     (binding [*out* *err*]
       (.println *err* err-msg))))
 
@@ -28,10 +28,10 @@
   "Starts message processing."
   [state-atom update-fn update-ex-fn msg-chan]
   (let [handle-msg (partial handle-msg state-atom update-fn update-ex-fn)]
-   (go-loop []
-     (if-let [msg (<! msg-chan)]
-       (do (handle-msg msg)
-           (recur))))))
+    (go-loop []
+      (if-let [msg (<! msg-chan)]
+        (do (handle-msg msg)
+            (recur))))))
 
 (defn buzz
   "Creates buzz which manages given state-atom based on messages."
