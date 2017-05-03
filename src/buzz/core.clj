@@ -8,13 +8,16 @@
 
 (defn default-update-ex
   "Default exception handler for update-fn."
+  #_(try
+      (throw (NullPointerException. "Oh no"))
+      (catch Exception ex
+        (default-update-ex "Msg" ex)))
   [msg ex]
   (let [err-msg (str
                  "Error occured while handling message.\n"
                  "  Event: " (with-out-str (pp/pprint msg) "\n")
                  "  Error: " (with-out-str (.printStackTrace ex (PrintWriter. *out*))))]
-    (binding [*out* *err*]
-      (.println *err* err-msg))))
+    (.println *err* err-msg)))
 
 (defn- handle-msg
   "Handles messages."
