@@ -1,7 +1,9 @@
 (ns buzz.impl.test-commons
   (:require [buzz.core :as b]
-            [clojure.core.async :as a :refer [chan put! go-loop
-                                              timeout alts! close! <!!]]))
+            [clojure.core.async :refer [chan put! timeout alts! close!
+                                        #?@(:cljs [<!]
+                                            :clj  [<!! go-loop])]])
+  #?(:cljs (:require-macros [cljs.core.async.macros :refer [go-loop]])))
 
 (defn- watching-chan
   "Returns chan which returns the value of atom right before its value was hanged to :end
@@ -35,11 +37,11 @@
     (doseq [msg messages]
       (b/put! buzz msg))
     (b/put! buzz :end)
-    (let [result  (<!! ch)]
+    (let [result (#?(:cljs <! :clj <!!) ch)]
       (b/close! buzz)
       result)))
 
 (defn throw-ex
   "Throws some exception."
   []
-  (throw (IllegalArgumentException. "This exception is expected")))
+  (throw (#?(:cljs js/Error. :clj Exception.) "This exception is expected")))

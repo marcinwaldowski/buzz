@@ -1,7 +1,7 @@
 (ns buzz.core-test
   (:require [buzz.core :as b]
-            [clojure.test :refer :all]
-            [buzz.impl.test-commons :refer :all]))
+            [clojure.test :refer [deftest is]]
+            [buzz.impl.test-commons :refer [test-buzz throw-ex]]))
 
 (deftest update-fn-returns-only-state
   (let [init-state 0

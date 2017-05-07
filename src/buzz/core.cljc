@@ -2,29 +2,34 @@
 
   "Asynchronous state management based on messages with pure functions."
 
-  (:require [clojure.core.async :as a :refer [go-loop <! chan]]
+  (:require [clojure.core.async :as a :refer [#?(:clj go-loop) <! chan]]
             [clojure.pprint :as pp])
-  (:import java.io.PrintWriter))
+  #?(:cljs (:require-macros [cljs.core.async.macros :refer [go-loop]])
+     :clj  (:import java.io.PrintWriter)))
 
 (defn default-update-ex
   "Default exception handler for update-fn."
   #_(try
-      (throw (NullPointerException. "Oh no"))
-      (catch Exception ex
+      (throw (#?(:cljs js/Error. :clj Exception.) "Oh no"))
+      (catch #?(:cljs :default :clj Exception) ex
         (default-update-ex "Msg" ex)))
   [msg ex]
   (let [err-msg (str
                  "Error occured while handling message.\n"
                  "  Event: " (with-out-str (pp/pprint msg) "\n")
-                 "  Error: " (with-out-str (.printStackTrace ex (PrintWriter. *out*))))]
-    (.println *err* err-msg)))
+                 "  " #?(:cljs ex
+                         :clj  (with-out-str
+                                 (.printStackTrace ex
+                                                   (PrintWriter. *out*)))))]
+    #?(:cljs (js/console.error err-msg)
+       :clj  (.println *err* err-msg))))
 
 (defn- handle-msg
   "Handles messages."
   [state-atom update-fn update-ex-fn msg]
   (try (let [res (update-fn @state-atom msg)]
          (reset! state-atom res))
-       (catch Exception ex
+       (catch #?(:clj Exception :cljs :default) ex
          (update-ex-fn msg ex))))
 
 (defn- start-message-processing
