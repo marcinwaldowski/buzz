@@ -1,45 +1,38 @@
 (ns buzz.impl.test-commons
   (:require [buzz.core :as b]
-            [clojure.core.async :refer [chan put! timeout alts! close!
+            [clojure.core.async :refer [chan put! timeout alts! close! to-chan
                                         #?@(:cljs [<!]
-                                            :clj  [<!! go-loop])]])
-  #?(:cljs (:require-macros [cljs.core.async.macros :refer [go-loop]])))
+                                            :clj  [<!! go go-loop])]])
+  #?(:cljs (:require-macros [cljs.core.async.macros :refer [go go-loop]]
+                            [cljs.test :refer [async]])))
 
-(defn- watching-chan
-  "Returns chan which returns the value of atom right before its value was hanged to :end
-  or returns :timeout if atom wasn't changed to :end in given timeout miliseconds."
-  [atom timeout-msecs]
-  (let [ch (chan)]
-    (add-watch atom :watch #(put! ch %4))
-    (go-loop [prev-val nil]
-      (let [val (first (alts! [ch (timeout timeout-msecs)]))]
-        (if (or (nil? val) (= val :end))
-          (do (remove-watch atom :watch)
-              (close! ch)
-              (if val
-                prev-val
-                :timeout))
-          (recur val))))))
+#?(:clj
+   (defmacro async
+     "Hack to make Clojurescript async tests work in Clojure."
+     [done & body]
+     `(let [~done (fn [])
+            ~'<!   <!!]
+        ~@(-> body
+              first
+              rest))))
 
-(defn test-buzz
-  "Creates and test buzz with given parameters. Return final state of atom managed by buzz."
-  [initial-state update-fn execute-fn messages & opts]
-  (let [{:keys [timeout-msecs update-ex-fn]
-         :or   {timeout-msecs 2000
-                update-ex-fn (fn [_ _])}} opts
-        state     (atom initial-state)
-        ch        (watching-chan state timeout-msecs)
-        update-fn (fn [state msg]
-                    (if (= msg :end)
-                      :end
-                      (update-fn state msg)))
-        buzz      (b/buzz state update-fn execute-fn :update-ex-fn update-ex-fn)]
-    (doseq [msg messages]
-      (b/put! buzz msg))
-    (b/put! buzz :end)
-    (let [result (#?(:cljs <! :clj <!!) ch)]
-      (b/close! buzz)
-      result)))
+(defn expected-atom-val-chan
+  "Creates chan which returns one value: true if atom change to given value
+  within given time or false otherwise."
+  ([atom value]
+   (expected-atom-val-chan atom value 1000))
+  ([atom value timeout-msecs]
+   (let [watcher (chan)
+         timeout (timeout timeout-msecs)]
+     (add-watch atom :watch #(put! watcher %4))
+     (put! watcher @atom)
+     (go-loop []
+       (let [[val port] (alts! [watcher timeout])]
+         (if (or (= port timeout)
+                 (= val value))
+           (do (remove-watch atom :watch)
+               (not= port timeout))
+           (recur)))))))
 
 (defn throw-ex
   "Throws some exception."
