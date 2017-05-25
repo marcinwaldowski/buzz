@@ -14,5 +14,6 @@ pom.xml.asc
 /.project
 /.classpath
 /.idea/
-/resources/public/js/compiled/
+/resources/public/js/
 /figwheel_server.log
+/node_modules
