@@ -4,6 +4,8 @@ Asynchronous state management based on messages with pure functions.
 
 Alpha state and undocumented.
 
+[![CircleCI](https://circleci.com/gh/marcinwaldowski/buzz/tree/master.svg?style=shield)](https://circleci.com/gh/marcinwaldowski/buzz/tree/master)
+
 ## Development
 
 ### Installation
