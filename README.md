@@ -14,30 +14,26 @@ Alpha state and undocumented.
 3. Clone this git repository and `cd` to it.
 4. Execute commands:
 
-  ```sh
-  lein npm install
-  npm install -g karma-cli
-  ```
+   ```sh
+   lein npm install
+   npm install -g karma-cli
+   ```
 
 ### Running tests
 
 1. Run tests in Clojure.
 
-  ```sh
-  lein test
-  ```
+   ```sh
+   lein test
+   ```
 
-2. Run tests in Chrome browser.
+2. Run tests in Chrome, Firefox or both browsers.
 
-  ```sh
-  lein doo chrome test once
-  ```
-
-2. Run tests in Firefox browser.
-
-  ```sh
-  lein doo firefox test once
-  ```
+   ```sh
+   lein doo chrome test once
+   lein doo firefox test once
+   lein doo browsers test once
+   ```
 
 ## License
 

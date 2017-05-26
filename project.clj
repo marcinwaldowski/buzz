@@ -24,6 +24,8 @@
   :source-paths ["src"]
   :resource-paths []
 
+  :doo {:alias {:browsers [:chrome :firefox]}}
+
   :cljsbuild {:builds
               [{:id "dev"
                 :source-paths ["src" "test"]

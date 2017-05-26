@@ -1,0 +1,15 @@
+machine:
+  node:
+    version: 6.1.0
+
+dependencies:
+  post:
+    - lein npm install
+    - npm install -g karma-cli
+  cache_directories:
+    - node_modules
+    - ~/.m2
+
+test:
+  post:
+    - lein doo browsers test once
