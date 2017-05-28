@@ -1,5 +1,6 @@
 (ns buzz.test-run
-  (:require [doo.runner :refer-macros [doo-tests]]
-            [buzz.core-test]))
+  (:require-macros [doo.runner])
+  (:require        [doo.runner]
+                   [buzz.core-test]))
 
-(doo-tests 'buzz.core-test)
+(doo.runner/doo-tests 'buzz.core-test)
