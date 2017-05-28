@@ -7,6 +7,7 @@
   #?(:cljs (:require-macros [cljs.core.async.macros :as async])
      :clj  (:import         [java.io PrintWriter])))
 
+
 (defn default-update-ex
   "Default exception handler for update-fn."
   #_(try
@@ -24,6 +25,7 @@
     #?(:cljs (js/console.error err-msg)
        :clj  (.println *err* err-msg))))
 
+
 (defn- handle-msg
   "Handles messages."
   [state-atom update-fn update-ex-fn msg]
@@ -31,6 +33,7 @@
          (reset! state-atom res))
        (catch #?(:clj Exception :cljs :default) ex
          (update-ex-fn msg ex))))
+
 
 (defn- start-message-processing
   "Starts message processing."
@@ -41,6 +44,7 @@
         (do (handle-msg msg)
             (recur))))))
 
+
 (defn buzz
   "Creates buzz which manages given state-atom based on messages."
   [state-atom update-fn execute-fn & opts]
@@ -50,10 +54,12 @@
     (start-message-processing state-atom update-fn update-ex-fn msg-chan)
     {:msg-chan msg-chan}))
 
+
 (defn put!
   "Puts message into buzz."
   [buzz msg]
   (async/put! (:msg-chan buzz) msg))
+
 
 (defn close!
   "Closes buzz."

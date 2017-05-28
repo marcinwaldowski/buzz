@@ -7,6 +7,7 @@
   #?(:cljs (:require-macros [cljs.test              :as test]
                             [cljs.core.async.macros :as async])))
 
+
 (deftest update-fn-returns-only-state
   (let [state      (atom 0)
         update-fn  (fn [state msg]
@@ -20,6 +21,7 @@
         (is (<! (test-commons/expected-atom-val-chan state 3)))
         (buzz/close! buzz)
         (done)))))
+
 
 (deftest update-fn-errors-should-not-break-processing
   (let [state      (atom 0)

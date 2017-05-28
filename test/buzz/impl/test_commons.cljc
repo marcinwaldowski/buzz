@@ -3,6 +3,7 @@
                             [clojure.core.async     :as async])
   #?(:cljs (:require-macros [cljs.core.async.macros :as async])))
 
+
 #?(:clj
    (defmacro async
      "Hack to make Clojurescript async tests work in Clojure."
@@ -12,6 +13,7 @@
         ~@(-> body
               first
               rest))))
+
 
 (defn expected-atom-val-chan
   "Creates chan which returns one value: true if atom change to given value
@@ -30,6 +32,7 @@
            (do (remove-watch atom :watch)
                (not= port timeout))
            (recur)))))))
+
 
 (defn throw-ex
   "Throws some exception."
