@@ -26,7 +26,7 @@
        :clj  (.println *err* err-msg))))
 
 
-(defn- handle-msg
+(defn ^:private handle-msg
   "Handles messages."
   [state-atom update-fn update-ex-fn msg]
   (try (let [res (update-fn @state-atom msg)]
@@ -35,7 +35,7 @@
          (update-ex-fn msg ex))))
 
 
-(defn- start-message-processing
+(defn ^:private start-message-processing
   "Starts message processing."
   [state-atom update-fn update-ex-fn msg-chan]
   (let [handle-msg (partial handle-msg state-atom update-fn update-ex-fn)]
@@ -45,14 +45,19 @@
             (recur))))))
 
 
+(def ^:private *buzz-opts-defaults
+  {:update-ex-fn default-update-ex})
+
+
 (defn buzz
   "Creates buzz which manages given state-atom based on messages."
-  [state-atom update-fn execute-fn & opts]
-  (let [{:keys [update-ex-fn]
-         :or   {update-ex-fn default-update-ex}} opts
-        msg-chan (async/chan)]
-    (start-message-processing state-atom update-fn update-ex-fn msg-chan)
-    {:msg-chan msg-chan}))
+  ([state-atom update-fn execute-fn]
+   (buzz state-atom update-fn execute-fn {}))
+  ([state-atom update-fn execute-fn opts]
+   (let [{:keys [update-ex-fn]} (merge *buzz-opts-defaults opts)
+         msg-chan               (async/chan)]
+     (start-message-processing state-atom update-fn update-ex-fn msg-chan)
+     {:msg-chan msg-chan})))
 
 
 (defn put!

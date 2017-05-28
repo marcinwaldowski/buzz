@@ -13,7 +13,7 @@
         update-fn  (fn [state msg]
                      (+ state msg))
         execute-fn nil
-        buzz       (buzz/buzz state update-fn execute-fn :update-ex-fn (fn [_ _]))]
+        buzz       (buzz/buzz state update-fn execute-fn {:update-ex-fn (fn [_ _])})]
     (test/async done
       (async/go
         (buzz/put! buzz 1)
@@ -30,7 +30,7 @@
                        :throw-ex (test-commons/throw-ex)
                        (+ state msg)))
         execute-fn nil
-        buzz       (buzz/buzz state update-fn execute-fn :update-ex-fn (fn [_ _]))]
+        buzz       (buzz/buzz state update-fn execute-fn {:update-ex-fn (fn [_ _])})]
     (test/async done
       (async/go
         (buzz/put! buzz 1)
