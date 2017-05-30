@@ -18,7 +18,7 @@
   [msg ex]
   (let [err-msg (str
                  "Error occured while handling message.\n"
-                 "  Event: " (with-out-str (pprint/pprint msg) "\n")
+                 "  Message: " (with-out-str (pprint/pprint msg) "\n")
                  "  " #?(:cljs ex
                          :clj  (with-out-str
                                  (.printStackTrace ex
@@ -29,17 +29,22 @@
 
 (defn ^:private handle-msg
   "Handles messages."
-  [state-atom update-fn update-ex-fn msg]
-  (try (let [res (update-fn @state-atom msg)]
-         (reset! state-atom res))
+  [state-atom update-fn update-ex-fn execute-fn mixer msg]
+  (try (let [update-res (update-fn @state-atom msg)]
+         (if (sequential? update-res)
+           (let [[new-state cmd] update-res]
+             (do (reset! state-atom new-state)
+                 (if-not (nil? cmd)
+                   (async/admix mixer (execute-fn cmd)))))
+           (reset! state-atom update-res)))
        (catch #?(:clj Exception :cljs :default) ex
          (update-ex-fn msg ex))))
 
 
 (defn ^:private start-message-processing
   "Starts message processing."
-  [state-atom update-fn update-ex-fn msg-chan]
-  (let [handle-msg (partial handle-msg state-atom update-fn update-ex-fn)]
+  [state-atom update-fn update-ex-fn execute-fn mixer msg-chan]
+  (let [handle-msg (partial handle-msg state-atom update-fn update-ex-fn execute-fn mixer)]
     (async/go-loop []
       (if-let [msg (async/<! msg-chan)]
         (do (handle-msg msg)
@@ -56,14 +61,17 @@
 
   Arguments:
 
-  1. state-atom - Atom managed by this buzz instance.
+  1. state-atom - Atom managed by this buzz instance. It is required
+     for the atom value to be a data structure for which sequential?
+     returns false, which implies that it must not be vector or list.
+     In practice atom value is always a map.
 
   2. update-fn - Update function.
 
      This function have to:
      - obligatorily produce new value for managed atom based on current value
        and passed message,
-     - optionally produce commands to execute.
+     - optionally produce command to execute.
 
      Function must accept two arguments:
      [current-state-val message]
@@ -73,29 +81,27 @@
      and returns one of following:
      - new-state-val
          new state value, which could be also current-state-val,
+     - [new-state-val]
+         new state value, which could be also current-state-val,
+     - [new-state-val nil]
+         new state value, which could be also current-state-val,
      - [new-state-val cmd]
-         new state and one command to execute,
-     - [new-state-val [cmd1 cmd2 ...  cmdn]]
-         new state and sequence of commands to execute.
+         new state and command to execute.
 
-     It is required that returned new state and command(s) be a data structure
-     or value for which sequential? returns false, which implies that they
-     cannot be vectors and lists. In practice they are almost always maps.
+     It is required for the returned new state value to be a data structure
+     or value for which sequential? returns false, which implies that it
+     must not be vector or list. In practice it is always a map.
 
   3. execute-fn - Execute function.
 
-     This function have to produce core.async channel which will return new
-     event(s). Events returned by this channel will be passed to update-fn
-     function.
+     This function have to produce core.async channel which will return
+     new message(s). Messages returned by this channel will be passed later
+     to update-fn function.
 
      Function must accept one argument:
      [cmd]
      where cmd is a command returned from update-fn
-     and returns core.async channel which will return events.
-
-     It is required that events returned from channel be a data structure
-     or value for which sequential? returns false, which implies that they
-     cannot be vectors or lists. In practice they are almost always maps.
+     and returns core.async channel which will return messages.
 
   4. opts - Optional additional options as map.
 
@@ -110,24 +116,26 @@
           where:
             - message is a message for which exception occured,
             - exception is a exception throwed by update-fn function."
+
   ([state-atom update-fn execute-fn]
    (buzz state-atom update-fn execute-fn {}))
   ([state-atom update-fn execute-fn opts]
    (let [{:keys [update-ex-fn]} (merge *buzz-opts-defaults opts)
-         msg-chan               (async/chan)]
-     (start-message-processing state-atom update-fn update-ex-fn msg-chan)
-     {:msg-chan msg-chan})))
+         msg-out-chan           (async/chan)
+         mixer                  (async/mix msg-out-chan)
+         msg-in-chan            (async/chan)]
+     (async/admix mixer msg-in-chan)
+     (start-message-processing state-atom update-fn update-ex-fn execute-fn mixer msg-out-chan)
+     {:msg-in-chan msg-in-chan})))
 
 
 (defn put!
-  "Puts message into buzz. Message must be a data structure or value for which
-  sequential? returns false, which implies that they cannot be vectors or lists.
-  In practice message is almost always map."
+  "Puts message into buzz."
   [buzz message]
-  (async/put! (:msg-chan buzz) message))
+  (async/put! (:msg-in-chan buzz) message))
 
 
 (defn close!
   "Closes buzz."
   [buzz]
-  (async/close! (:msg-chan buzz)))
+  (async/close! (:msg-in-chan buzz)))
