@@ -41,4 +41,4 @@ Alpha state and undocumented.
 
 Copyright © 2017 Marcin Waldowski
 
-Licensed under the Apache License Version 2.0
+Distributed under the [MIT License](http://opensource.org/licenses/MIT).
