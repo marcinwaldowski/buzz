@@ -7,12 +7,12 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.542"]
-                 [org.clojure/core.async "0.3.442"
+                 [org.clojure/clojurescript "1.9.854"]
+                 [org.clojure/core.async "0.3.443"
                   :exclusions [org.clojure/tools.reader]]]
 
-  :plugins [[lein-figwheel "0.5.10"]
-            [lein-cljsbuild "1.1.5" :exclusions [[org.clojure/clojure]]]
+  :plugins [[lein-figwheel "0.5.11"]
+            [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-doo "0.1.7"]
             [lein-npm "0.6.2"]]
 
@@ -51,8 +51,8 @@
                            :pretty-print false}}]}
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]
-                                  [figwheel-sidecar "0.5.10"]
-                                  [com.cemerick/piggieback "0.2.1"]
+                                  [figwheel-sidecar "0.5.11"]
+                                  [com.cemerick/piggieback "0.2.2"]
                                   [lein-doo "0.1.7"]]
 
                    :source-paths ["src" "dev"]
