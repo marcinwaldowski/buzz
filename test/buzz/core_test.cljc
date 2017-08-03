@@ -15,9 +15,9 @@
 (defn ^:private test-update-fn
   [state [msg-type & vals]]
   (case msg-type
-    :add-one      (inc state)
-    :add-v0       (+ state (first vals))
-    :add-v1       [(+ state (first vals))]
+    :add-one      [(inc state)]
+    :add-v0       [(+ state (first vals))]
+    :add-v1       (list (+ state (first vals)))
     :add-v2       [(+ state (first vals)) nil]
     :throw-ex     (test-commons/throw-ex)
     :add-exp      (let [[b n] vals]
@@ -56,7 +56,7 @@
       (async/go
         (buzz/put! buzz [:add-v0 1])
         (buzz/put! buzz [:throw-ex])
-        (buzz/put! buzz [:add-v1 2])
+        (buzz/put! buzz [:add-v2 2])
         (is (<! (test-commons/expected-atom-val-chan state 3)))
         (buzz/close! buzz)
         (done)))))
@@ -72,6 +72,7 @@
         (buzz/close! buzz)
         (done)))))
 
+
 (deftest execute-fn-errors-should-not-break-processing
   (let [state      (atom 0)
         buzz       (buzz/buzz state test-update-fn test-execute-fn *test-opts)]
@@ -79,7 +80,7 @@
       (async/go
         (buzz/put! buzz [:add-v0 1])
         (buzz/put! buzz [:add-throw-ex])
-        (buzz/put! buzz [:add-v1 2])
+        (buzz/put! buzz [:add-v2 2])
         (is (<! (test-commons/expected-atom-val-chan state 3)))
         (buzz/close! buzz)
         (done)))))

@@ -1,6 +1,6 @@
 (ns buzz.core
 
-  "Asynchronous state management based on messages with pure functions."
+  "Asynchronous state management based on messages."
 
   (:require                 [clojure.core.async     :as async]
                             [clojure.pprint         :as pprint])
@@ -8,13 +8,9 @@
      :clj  (:import         [java.io PrintWriter])))
 
 
-(defn default-update-ex
+(defn ^:private default-update-ex
   "Default exception handler for update-fn which prints
   exception to stderr or browser console."
-  #_(try
-      (throw (#?(:cljs js/Error. :clj Exception.) "Oh no"))
-      (catch #?(:cljs :default :clj Exception) ex
-          (default-update-ex "Msg" ex)))
   [msg ex]
   (let [err-msg (str
                  "Error occured while handling message.\n"
@@ -30,13 +26,10 @@
 (defn ^:private handle-msg
   "Handles messages."
   [state-atom update-fn update-ex-fn execute-fn mixer msg]
-  (try (let [update-res (update-fn @state-atom msg)]
-         (if (sequential? update-res)
-           (let [[new-state cmd] update-res]
-             (do (reset! state-atom new-state)
-                 (if-not (nil? cmd)
-                   (async/admix mixer (execute-fn cmd)))))
-           (reset! state-atom update-res)))
+  (try (let [[new-state cmd] (update-fn @state-atom msg)]
+         (reset! state-atom new-state)
+         (if-not (nil? cmd)
+           (async/admix mixer (execute-fn cmd))))
        (catch #?(:clj Exception :cljs :default) ex
          (update-ex-fn msg ex))))
 
@@ -51,7 +44,7 @@
             (recur))))))
 
 
-(def ^:private *buzz-opts-defaults
+(def ^:private *default-opts
   "Default options for buzz."
   {:update-ex-fn default-update-ex})
 
@@ -61,10 +54,7 @@
 
   Arguments:
 
-  1. state-atom - Atom managed by this buzz instance. It is required
-     for the atom value to be a data structure for which sequential?
-     returns false, which implies that it must not be vector or list.
-     In practice atom value is always a map.
+  1. state-atom - Atom managed by this buzz instance.
 
   2. update-fn - Update function.
 
@@ -79,33 +69,25 @@
        - current-state-val is the current value of managed atom,
        - message is the message to handle,
      and returns one of following:
-     - new-state-val
-         new state value, which could be also current-state-val,
      - [new-state-val]
-         new state value, which could be also current-state-val,
-     - [new-state-val nil]
-         new state value, which could be also current-state-val,
+         vector with new state value,
      - [new-state-val cmd]
-         new state and command to execute.
-
-     It is required for the returned new state value to be a data structure
-     or value for which sequential? returns false, which implies that it
-     must not be vector or list. In practice it is always a map.
+         vector with new state value and command to execute.
 
   3. execute-fn - Execute function.
 
      This function have to produce core.async channel which will return
-     new message(s). Messages returned by this channel will be passed later
+     new message(s). Messages returned by this channel are passed later
      to update-fn function.
 
      Function must accept one argument:
      [cmd]
      where cmd is a command returned from update-fn
-     and returns core.async channel which will return messages.
+     and returns core.async channel which returns messages.
 
-  4. opts - Optional additional options as map.
+  4. opts - Optional options map.
 
-     This map contains options which overrides default options.
+     This map contains options which override default options.
 
      This map may contain following keys:
      - :update-ex-fn
@@ -120,7 +102,7 @@
   ([state-atom update-fn execute-fn]
    (buzz state-atom update-fn execute-fn {}))
   ([state-atom update-fn execute-fn opts]
-   (let [{:keys [update-ex-fn]} (merge *buzz-opts-defaults opts)
+   (let [{:keys [update-ex-fn]} (merge *default-opts opts)
          msg-out-chan           (async/chan)
          mixer                  (async/mix msg-out-chan)
          msg-in-chan            (async/chan)]
