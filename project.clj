@@ -1,5 +1,5 @@
 (defproject buzz "0.1.0-SNAPSHOT"
-  :description "Asynchronous state management based on messages with pure functions."
+  :description "Asynchronous state management based on messages."
   :url "https://github.com/marcinwaldowski/buzz"
   :license {:name "MIT License"
             :url "http://opensource.org/licenses/MIT"}
@@ -14,7 +14,8 @@
   :plugins [[lein-figwheel "0.5.11"]
             [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-doo "0.1.7"]
-            [lein-npm "0.6.2"]]
+            [lein-npm "0.6.2"]
+            [lein-codox "0.10.3"]]
 
   :npm {:devDependencies [[karma "1.7.0"]
                           [karma-cljs-test "0.1.0"]
@@ -25,6 +26,7 @@
   :resource-paths []
 
   :doo {:alias {:browsers [:chrome :firefox]}}
+  :codox {:namespaces [buzz.core]}
 
   :cljsbuild {:builds
               [{:id "dev"
@@ -55,7 +57,7 @@
                                   [com.cemerick/piggieback "0.2.2"]
                                   [lein-doo "0.1.7"]]
 
-                   :source-paths ["src" "dev"]
+                   :source-paths ["dev"]
                    :resource-paths ["resources"]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :clean-targets ^{:protect false} ["resources/public/js"
