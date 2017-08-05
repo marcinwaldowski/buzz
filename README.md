@@ -6,6 +6,10 @@ Alpha state and undocumented.
 
 [![CircleCI](https://circleci.com/gh/marcinwaldowski/buzz/tree/master.svg?style=shield)](https://circleci.com/gh/marcinwaldowski/buzz/tree/master)
 
+## Documentation
+
+* [API Docs](https://marcinwaldowski.github.io/buzz/)
+
 ## Development
 
 ### Installation
