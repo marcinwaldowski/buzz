@@ -9,10 +9,10 @@
 
 
 (def ^:private *test-opts
-  {:update-ex-fn (fn [_ _])})
+  {:handle-ex-fn (fn [_ _])})
 
 
-(defn ^:private test-update-fn
+(defn ^:private test-handle-fn
   [state [msg-type & vals]]
   (case msg-type
     :add-one      [(inc state)]
@@ -35,9 +35,9 @@
     :throw-ex (test-commons/throw-ex)))
 
 
-(deftest update-fn-returns-only-state
+(deftest handle-fn-returns-only-state
   (let [state      (atom 0)
-        buzz       (buzz/buzz state test-update-fn test-execute-fn)]
+        buzz       (buzz/buzz state test-handle-fn test-execute-fn)]
     (test/async done
       (async/go
         (buzz/put! buzz [:add-one])
@@ -49,9 +49,9 @@
         (done)))))
 
 
-(deftest update-fn-errors-should-not-break-processing
+(deftest handle-fn-errors-should-not-break-processing
   (let [state      (atom 0)
-        buzz       (buzz/buzz state test-update-fn test-execute-fn *test-opts)]
+        buzz       (buzz/buzz state test-handle-fn test-execute-fn *test-opts)]
     (test/async done
       (async/go
         (buzz/put! buzz [:add-v0 1])
@@ -62,9 +62,9 @@
         (done)))))
 
 
-(deftest update-fn-returns-state-and-command
+(deftest handle-fn-returns-state-and-command
   (let [state      (atom 0)
-        buzz       (buzz/buzz state test-update-fn test-execute-fn)]
+        buzz       (buzz/buzz state test-handle-fn test-execute-fn)]
     (test/async done
       (async/go
         (buzz/put! buzz [:add-exp 2 8])
@@ -75,7 +75,7 @@
 
 (deftest execute-fn-errors-should-not-break-processing
   (let [state      (atom 0)
-        buzz       (buzz/buzz state test-update-fn test-execute-fn *test-opts)]
+        buzz       (buzz/buzz state test-handle-fn test-execute-fn *test-opts)]
     (test/async done
       (async/go
         (buzz/put! buzz [:add-v0 1])
