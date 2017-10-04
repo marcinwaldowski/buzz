@@ -113,12 +113,12 @@
 
 
 (defn put!
-  "Puts message into buzz."
+  "Puts message into buzz. Returns true unless buzz is already closed."
   [buzz message]
   (async/put! (:msg-in-chan buzz) message))
 
 
 (defn close!
-  "Closes buzz."
+  "Closes buzz. Closing a closed buzz is a no-op. Returns nil."
   [buzz]
   (async/close! (:msg-in-chan buzz)))
