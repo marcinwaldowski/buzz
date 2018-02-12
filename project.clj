@@ -1,4 +1,4 @@
-(defproject buzz "0.1.0"
+(defproject buzz "0.2.0"
   :description "Asynchronous state management based on messages."
   :url "https://github.com/marcinwaldowski/buzz"
   :license {:name "MIT License"
@@ -6,9 +6,9 @@
 
   :min-lein-version "2.7.1"
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.908"]
-                 [org.clojure/core.async "0.3.443"
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.9.946"]
+                 [org.clojure/core.async "0.4.474"
                   :exclusions [org.clojure/tools.reader]]]
 
   :plugins [[lein-figwheel "0.5.14"]
@@ -21,9 +21,6 @@
                           [karma-cljs-test "0.1.0"]
                           [karma-chrome-launcher "2.1.1"]
                           [karma-firefox-launcher "1.0.1"]]}
-
-  :deploy-repositories [["releases"  {:sign-releases false :url "https://clojars.org/repo"}]
-                        ["snapshots" {:sign-releases false :url "https://clojars.org/repo"}]]
 
   :source-paths ["src"]
   :resource-paths []
@@ -55,7 +52,7 @@
                            :optimizations :advanced
                            :pretty-print false}}]}
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.9"]
                                   [figwheel-sidecar "0.5.14"]
                                   [com.cemerick/piggieback "0.2.2"]
                                   [lein-doo "0.1.8"]]

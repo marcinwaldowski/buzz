@@ -1,11 +1,11 @@
 (ns buzz.core-test
   (:require                 [clojure.test           :refer [deftest is testing]]
-                            [clojure.core.async     :as async]
                             [buzz.core              :as buzz]
                             [buzz.impl.test-commons :as test-commons])
-  #?(:clj  (:require        [buzz.impl.test-commons :as test]))
+  #?(:clj  (:require        [buzz.impl.test-commons :as test]
+                            [clojure.core.async     :as asyncm]))
   #?(:cljs (:require-macros [cljs.test              :as test]
-                            [cljs.core.async.macros :as async])))
+                            [cljs.core.async.macros :as asyncm])))
 
 
 (def ^:private *test-opts
@@ -28,7 +28,7 @@
 (defn ^:private test-execute-fn
   [[cmd-type & vals]]
   (case cmd-type
-    :exp (async/go
+    :exp (asyncm/go
            (let [[msg-type b n] vals
                  res            (reduce * (repeat n b))]
              [msg-type res]))
@@ -39,7 +39,7 @@
   (let [state      (atom 0)
         buzz       (buzz/buzz state test-handle-fn test-execute-fn)]
     (test/async done
-      (async/go
+      (asyncm/go
         (buzz/put! buzz [:add-one])
         (buzz/put! buzz [:add-v0 2])
         (buzz/put! buzz [:add-v1 4])
@@ -53,7 +53,7 @@
   (let [state      (atom 0)
         buzz       (buzz/buzz state test-handle-fn test-execute-fn *test-opts)]
     (test/async done
-      (async/go
+      (asyncm/go
         (buzz/put! buzz [:add-v0 1])
         (buzz/put! buzz [:throw-ex])
         (buzz/put! buzz [:add-v2 2])
@@ -66,7 +66,7 @@
   (let [state      (atom 0)
         buzz       (buzz/buzz state test-handle-fn test-execute-fn)]
     (test/async done
-      (async/go
+      (asyncm/go
         (buzz/put! buzz [:add-exp 2 8])
         (is (<! (test-commons/expected-atom-val-chan state 256)))
         (buzz/close! buzz)
@@ -77,7 +77,7 @@
   (let [state      (atom 0)
         buzz       (buzz/buzz state test-handle-fn test-execute-fn *test-opts)]
     (test/async done
-      (async/go
+      (asyncm/go
         (buzz/put! buzz [:add-v0 1])
         (buzz/put! buzz [:add-throw-ex])
         (buzz/put! buzz [:add-v2 2])

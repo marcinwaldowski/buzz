@@ -22,7 +22,7 @@ See [API Docs](https://marcinwaldowski.github.io/buzz/)
 To use buzz create Clojurescript or Clojure project and add the following dependency to it:
 
 ```clojure
-[buzz 0.1.0]
+[buzz 0.2.0]
 ```
 
 To start working with buzz, require the `buzz.core` at the REPL:
@@ -192,6 +192,6 @@ The general idea of buzz is to:
 
 ## License
 
-Copyright © 2017 Marcin Waldowski
+Copyright © 2018 Marcin Waldowski
 
 Distributed under the [MIT License](http://opensource.org/licenses/MIT).

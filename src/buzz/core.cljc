@@ -4,8 +4,9 @@
 
   (:require                 [clojure.core.async     :as async]
                             [clojure.pprint         :as pprint])
-  #?(:cljs (:require-macros [cljs.core.async.macros :as async])
-     :clj  (:import         [java.io PrintWriter])))
+  #?(:cljs (:require-macros [cljs.core.async.macros :as asyncm]))
+  #?(:clj  (:require        [clojure.core.async     :as asyncm]))
+  #?(:clj  (:import         [java.io PrintWriter])))
 
 
 (defn ^:private default-handle-ex
@@ -38,7 +39,7 @@
   "Starts message processing."
   [state-atom handle-fn handle-ex-fn execute-fn mixer msg-chan]
   (let [handle-msg (partial handle-msg state-atom handle-fn handle-ex-fn execute-fn mixer)]
-    (async/go-loop []
+    (asyncm/go-loop []
       (if-let [msg (async/<! msg-chan)]
         (do (handle-msg msg)
             (recur))))))

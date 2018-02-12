@@ -1,7 +1,8 @@
 (ns buzz.impl.test-commons
   (:require                 [buzz.core              :as buzz]
                             [clojure.core.async     :as async])
-  #?(:cljs (:require-macros [cljs.core.async.macros :as async])))
+  #?(:cljs (:require-macros [cljs.core.async.macros :as asyncm]))
+  #?(:clj  (:require        [clojure.core.async     :as asyncm])))
 
 
 #?(:clj
@@ -25,7 +26,7 @@
          timeout (async/timeout timeout-msecs)]
      (add-watch atom :watch #(async/put! watcher %4))
      (async/put! watcher @atom)
-     (async/go-loop []
+     (asyncm/go-loop []
        (let [[val port] (async/alts! [watcher timeout])]
          (if (or (= port timeout)
                  (= val value))
